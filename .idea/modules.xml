@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Security.iml" filepath="$PROJECT_DIR$/Security.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Security-App/Security-App.iml" filepath="$PROJECT_DIR$/Security-App/Security-App.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Security-Borowser/Security-Borowser.iml" filepath="$PROJECT_DIR$/Security-Borowser/Security-Borowser.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Security-Core/Security-Core.iml" filepath="$PROJECT_DIR$/Security-Core/Security-Core.iml" />
+    </modules>
+  </component>
+</project>
