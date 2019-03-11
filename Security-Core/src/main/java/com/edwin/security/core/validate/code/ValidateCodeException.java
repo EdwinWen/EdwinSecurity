@@ -1,4 +1,4 @@
-package com.edwin.security.core.validate.core;
+package com.edwin.security.core.validate.code;
 
 import org.springframework.security.core.AuthenticationException;
 

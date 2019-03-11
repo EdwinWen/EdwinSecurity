@@ -1,56 +1,110 @@
 package com.edwin.security.browser;
 
-import com.edwin.security.browser.authentication.ImoocAuthenticationSuccessHandler;
-import com.edwin.security.core.properties.SecurityProperties;
-import com.edwin.security.core.validate.core.ValidateCodeFilter;
+import javax.sql.DataSource;
+
+import com.edwin.security.core.authentication.AbstractChannelSecurityConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+import org.springframework.security.web.session.InvalidSessionStrategy;
+import org.springframework.security.web.session.SessionInformationExpiredStrategy;
+import org.springframework.social.security.SpringSocialConfigurer;
+
+
+import com.edwin.security.core.authentication.mobile.SmsCodeAuthenticationSecurityConfig;
+import com.edwin.security.core.properties.SecurityConstants;
+import com.edwin.security.core.properties.SecurityProperties;
+import com.edwin.security.core.validate.code.ValidateCodeSecurityConfig;
 
 /**
  * Created by wenpuzhao on 2019/1/7.
  */
 @Configuration
-public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
+public class BrowserSecurityConfig extends AbstractChannelSecurityConfig {
 
     @Autowired
     private SecurityProperties securityProperties;
 
     @Autowired
-    private AuthenticationSuccessHandler imoocAuthenticationSuccessHandler;
+    private DataSource dataSource;
 
     @Autowired
-    private AuthenticationFailureHandler imoocAuthenctiationFailureHandler;
+    private UserDetailsService userDetailsService;
 
+    @Autowired
+    private SmsCodeAuthenticationSecurityConfig smsCodeAuthenticationSecurityConfig;
 
+    @Autowired
+    private ValidateCodeSecurityConfig validateCodeSecurityConfig;
+
+    @Autowired
+    private SpringSocialConfigurer imoocSocialSecurityConfig;
+
+//    @Autowired
+//    private SessionInformationExpiredStrategy sessionInformationExpiredStrategy;
+//
+//    @Autowired
+//    private InvalidSessionStrategy invalidSessionStrategy;
+
+    @Override
     protected void configure(HttpSecurity http) throws Exception {
-        ValidateCodeFilter validateCodeFilter = new ValidateCodeFilter();
-        validateCodeFilter.setAuthenticationFailureHandler(imoocAuthenctiationFailureHandler);
-        http.addFilterBefore(validateCodeFilter, UsernamePasswordAuthenticationFilter.class)
-                .formLogin()
-                .loginPage("/authentication/require")// 自定义的登录页面，通过一个controller来进行页面跳转，进而判断是否为html登录
-                .loginProcessingUrl("/authentication/form") // 自定义前端提交对 action 为登录身份验证
-                .successHandler(imoocAuthenticationSuccessHandler)// 自定义登录成功，返回restful风格到状态码
-                .failureHandler(imoocAuthenctiationFailureHandler)// 自定义登录失败，返回restful风格到状态码
-                .and().authorizeRequests()
-                .antMatchers("/authentication/require"
-                        ,securityProperties.getBrowser().getLoginPage()
-                        ,"/code/image"
-                ).permitAll()// 对自定义对登录页面，springsecurity 不进行拦截
-                .anyRequest().authenticated()
-        .and().csrf().disable();
+        applyPasswordAuthenticationConfig(http);
+
+        http.apply(validateCodeSecurityConfig)
+                .and()
+                .apply(smsCodeAuthenticationSecurityConfig)
+                .and()
+                .apply(imoocSocialSecurityConfig)
+                .and()
+                .rememberMe()
+                .tokenRepository(persistentTokenRepository())
+                .tokenValiditySeconds(securityProperties.getBrowser().getRememberMeSeconds())
+                .userDetailsService(userDetailsService)
+                .and()
+//                .sessionManagement()
+//                .invalidSessionStrategy(invalidSessionStrategy)
+//                .maximumSessions(securityProperties.getBrowser().getSession().getMaximumSessions())
+//                .maxSessionsPreventsLogin(securityProperties.getBrowser().getSession().isMaxSessionsPreventsLogin())
+//                .expiredSessionStrategy(sessionInformationExpiredStrategy)
+//                .and()
+//                .and()
+                .authorizeRequests()
+                .antMatchers(
+                        SecurityConstants.DEFAULT_UNAUTHENTICATION_URL,
+                        SecurityConstants.DEFAULT_LOGIN_PROCESSING_URL_MOBILE,
+                        securityProperties.getBrowser().getLoginPage(),
+                        SecurityConstants.DEFAULT_VALIDATE_CODE_URL_PREFIX+"/*"
+//                        ,
+//                        securityProperties.getBrowser().getSignUpUrl(),
+//                        securityProperties.getBrowser().getSession().getSessionInvalidUrl()+".json",
+//                        securityProperties.getBrowser().getSession().getSessionInvalidUrl()+".html",
+//                        "/user/regist"
+                )
+                .permitAll()
+                .anyRequest()
+                .authenticated()
+                .and()
+                .csrf().disable();
+
     }
 
-    // 用户名密码进行加密
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+    @Bean
+    public PersistentTokenRepository persistentTokenRepository() {
+        JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
+        tokenRepository.setDataSource(dataSource);
+//		tokenRepository.setCreateTableOnStartup(true);
+        return tokenRepository;
+    }
+
 }
