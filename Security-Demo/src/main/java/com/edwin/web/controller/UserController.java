@@ -3,13 +3,19 @@ package com.edwin.web.controller;
 import com.edwin.dto.User;
 import com.edwin.dto.UserQueryCondition;
 import com.edwin.exception.UserNotExistException;
+import com.edwin.security.app.social.impl.AppSingUpUtils;
+import com.edwin.security.core.properties.SecurityProperties;
 import com.fasterxml.jackson.annotation.JsonView;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.social.connect.web.ProviderSignInUtils;
@@ -34,17 +40,38 @@ public class UserController {
 
     @Autowired
     private ProviderSignInUtils providerSignInUtils;
+    @Autowired
+    private AppSingUpUtils appSingUpUtils;
+
+    @Autowired
+    private SecurityProperties securityProperties;
 
     @PostMapping("/regist")
     public void regist(User user, HttpServletRequest request) {
 
         //不管是注册用户还是绑定用户，都会拿到一个用户唯一标识。
         String userId = user.getUsername();
-        providerSignInUtils.doPostSignUp(userId, new ServletWebRequest(request));
+
+        // 默认浏览器session的形式进行注册用户信息
+        //providerSignInUtils.doPostSignUp(userId, new ServletWebRequest(request));
+
+        // app情况下使用redis的形式来进行保存用户信息
+        appSingUpUtils.doPostSignUp(new ServletWebRequest(request),userId);
     }
 
     @GetMapping("/me")
-    public Object getCurrentUser(@AuthenticationPrincipal UserDetails user) {
+    public Object getCurrentUser(Authentication user, HttpServletRequest request) throws Exception
+    {
+
+        String token = StringUtils.substringAfter(request.getHeader("Authorization"), "bearer ");
+
+        Claims claims = Jwts.parser().setSigningKey(securityProperties.getOauth2().getJwtSigningKey().getBytes("UTF-8"))
+                .parseClaimsJws(token).getBody();
+
+        String company = (String) claims.get("company");
+
+        System.out.println("------>"+company);
+
         return user;
     }
 

@@ -1,8 +1,8 @@
 package com.edwin.security.browser;
 
-import com.edwin.security.browser.support.SimpleResponse;
-import com.edwin.security.browser.support.SocialUserInfo;
 import com.edwin.security.core.properties.SecurityProperties;
+import com.edwin.security.core.support.SimpleResponse;
+import com.edwin.security.core.support.SocialUserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

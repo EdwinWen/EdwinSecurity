@@ -33,6 +33,9 @@ public class SocialConfig extends SocialConfigurerAdapter {
     @Autowired(required = false)
     private ConnectionSignUp connectionSignUp;
 
+    @Autowired(required = false)
+    private SocialAuthenticationFilterPostProcessor socialAuthenticationFilterPostProcessor;
+
     @Override
     public UsersConnectionRepository getUsersConnectionRepository(ConnectionFactoryLocator connectionFactoryLocator) {
         JdbcUsersConnectionRepository repository = new JdbcUsersConnectionRepository(dataSource,
@@ -46,10 +49,14 @@ public class SocialConfig extends SocialConfigurerAdapter {
 
     @Bean
     public SpringSocialConfigurer imoocSocialSecurityConfig() {
-
+        // 默认配置类，进行组件的组装
+        // 包括了过滤器SocialAuthenticationFilter 添加到security过滤链中
         String filterProcessesUrl = securityProperties.getSocial().getFilterProcessesUrl();
         ImoocSpringSocialConfigurer configurer = new ImoocSpringSocialConfigurer(filterProcessesUrl);
         configurer.signupUrl(securityProperties.getBrowser().getSignUpUrl());
+        // 通过注解获取到使用方注入的bean，给我们刚才写的配置类
+        configurer.setSocialAuthenticationFilterPostProcessor(socialAuthenticationFilterPostProcessor);
+
         return configurer;
     }
 

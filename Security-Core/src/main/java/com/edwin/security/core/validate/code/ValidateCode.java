@@ -1,11 +1,12 @@
 package com.edwin.security.core.validate.code;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * Created by wenpuzhao on 2019/1/14.
  */
-public class ValidateCode {
+public class ValidateCode implements Serializable {
     private String code;
     private LocalDateTime expireTime;
 

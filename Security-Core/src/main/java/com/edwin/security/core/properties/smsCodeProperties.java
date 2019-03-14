@@ -5,7 +5,7 @@ package com.edwin.security.core.properties;
  */
 public class smsCodeProperties {
     private int length=6;
-    private int expireIn=60;
+    private int expireIn=180;
 
     private String url;
 
