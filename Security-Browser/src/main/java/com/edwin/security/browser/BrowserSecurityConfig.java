@@ -3,6 +3,7 @@ package com.edwin.security.browser;
 import javax.sql.DataSource;
 
 import com.edwin.security.core.authentication.AbstractChannelSecurityConfig;
+import com.edwin.security.core.authorize.AuthorizeConfigManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,6 +47,9 @@ public class BrowserSecurityConfig extends AbstractChannelSecurityConfig {
     @Autowired
     private SpringSocialConfigurer imoocSocialSecurityConfig;
 
+    @Autowired
+    private AuthorizeConfigManager authorizeConfigManager;
+
 //    @Autowired
 //    private SessionInformationExpiredStrategy sessionInformationExpiredStrategy;
 //
@@ -67,30 +71,9 @@ public class BrowserSecurityConfig extends AbstractChannelSecurityConfig {
                 .tokenValiditySeconds(securityProperties.getBrowser().getRememberMeSeconds())
                 .userDetailsService(userDetailsService)
                 .and()
-//                .sessionManagement()
-//                .invalidSessionStrategy(invalidSessionStrategy)
-//                .maximumSessions(securityProperties.getBrowser().getSession().getMaximumSessions())
-//                .maxSessionsPreventsLogin(securityProperties.getBrowser().getSession().isMaxSessionsPreventsLogin())
-//                .expiredSessionStrategy(sessionInformationExpiredStrategy)
-//                .and()
-//                .and()
-                .authorizeRequests()
-                .antMatchers(
-                        SecurityConstants.DEFAULT_UNAUTHENTICATION_URL,
-                        SecurityConstants.DEFAULT_LOGIN_PROCESSING_URL_MOBILE,
-                        securityProperties.getBrowser().getLoginPage(),
-                        SecurityConstants.DEFAULT_VALIDATE_CODE_URL_PREFIX+"/*"
-//                        ,
-//                        securityProperties.getBrowser().getSignUpUrl(),
-//                        securityProperties.getBrowser().getSession().getSessionInvalidUrl()+".json",
-//                        securityProperties.getBrowser().getSession().getSessionInvalidUrl()+".html",
-//                        "/user/regist"
-                )
-                .permitAll()
-                .anyRequest()
-                .authenticated()
-                .and()
                 .csrf().disable();
+
+        authorizeConfigManager.config(http.authorizeRequests());
 
     }
 

@@ -24,6 +24,11 @@
             <artifactId>Security-App</artifactId>
             <version>${edwin.security.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.edwin</groupId>
+            <artifactId>Security-Authorize</artifactId>
+            <version>${edwin.security.version}</version>
+        </dependency>
 
 
 

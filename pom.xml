@@ -51,6 +51,7 @@
         <module>Security-Browser</module>
         <module>Security-App</module>
         <module>Security-Demo</module>
+        <module>Security-Authorize</module>
     </modules>
 
 
