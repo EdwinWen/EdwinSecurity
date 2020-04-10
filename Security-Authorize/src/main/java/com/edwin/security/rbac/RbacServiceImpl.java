@@ -19,7 +19,7 @@ public class RbacServiceImpl implements RbacService {
     public boolean hasPermission(HttpServletRequest request, Authentication authentication) {
         Object principal = authentication.getPrincipal();
 
-        boolean hasPermission = false;
+        boolean hasPermission = true;
         // 有可能 principal 是一个Anonymous
         // 所以只要是一个UserDetails那么就能标识是经过了我们自己的数据库查询的
         // 当前需要先配置UserDetailsServices

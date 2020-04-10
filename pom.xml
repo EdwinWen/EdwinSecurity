@@ -52,6 +52,11 @@
         <module>Security-App</module>
         <module>Security-Demo</module>
         <module>Security-Authorize</module>
+        <module>microservicecloud-api</module>
+        <module>microservicecloud-eureka</module>
+        <module>microservicecloud-zipkin</module>
+        <module>microservicecloud-customer</module>
+        <module>microservicecloud-provider</module>
     </modules>
 
 
